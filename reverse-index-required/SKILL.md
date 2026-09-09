@@ -16,7 +16,7 @@ description: "Use for impact analysis of states, fields, events, or APIs, and be
 - **events**:这个同步事件订阅了哪些业务场景?新业务场景需要不需要触发?报文字段够不够?
 - **apis**:这个 API 被哪些方调用?改 API 出参 / 入参时哪些调用方需要协同?
 
-不处理:跨项目 API 调用方对照(走 `cross-project-locator`)、表关系 / SQL 查询逻辑(走 `backend-knowledge-graph-required`)、业务术语映射(走 `glossary-required`)。
+不处理:表关系 / SQL 查询逻辑(走 `backend-knowledge-graph-required`)、业务术语映射(走 `glossary-required`)。
 
 ---
 
@@ -31,13 +31,13 @@ description: "Use for impact analysis of states, fields, events, or APIs, and be
 | **AI 即将 Edit/Write API endpoint 定义** | 新增 / 修改 / 删除 Controller endpoint、shelf endpoint、Spring `@RequestMapping` 等 | 先读 `apis.md` 看调用方;改完后必同步 |
 | **AI 完成 ≥1 项以上变更后** | 上述 4 类变更落地后 | 同回合内必更新对应反向索引 |
 | **项目存在反向索引文件** | `docs/knowledge-graph/reverse-index/` 或 `ai-docs/{project}/knowledge-graph/reverse-index/_candidates.md` | 编码前必读;变更后必回写 |
-| **用户主动要求** | 「建反向索引」「扫反向影响」「生成 reverse index」「冷启动反向索引」 | 引导跑 `hooks/scan-reverse-index.js` 后再人工修订 |
+| **用户主动要求** | 「建反向索引」「扫反向影响」「生成 reverse index」「冷启动反向索引」 | 引导跑本 Skill 目录下 `hooks/scan-reverse-index.js` 后再人工修订 |
 
 > **常见误判反例**:
 > - ❌ "我用 grep 现场扫一下就行,不用建反向索引" → **错**,grep 漏字符串字面量、SQL where 条件、配置文件;反向索引必须显式登记
 > - ❌ "只是改一个字段类型,不影响业务,不用更新反向索引" → **错**,字段类型改了读写点的解析逻辑可能受影响,必须同步
 > - ❌ "项目没建反向索引,所以 skill 不适用" → **错**,没建就先跑冷启动扫描脚本生成候选池
-> - ❌ "这个改动是跨项目的,反向索引归 cross-project-locator" → **错**,**单服务内**的反向影响仍走本 skill;**跨项目调用方**才走 cross-project-locator
+> - ❌ "这个改动是跨项目的,单服务内的反向索引不用管" → **错**,**单服务内**的反向影响仍走本 skill;跨项目调用方不在本 skill 范围
 > - ❌ "新增枚举值不破坏旧逻辑,因为旧代码不会命中新值" → **错**,这正是反向索引要回答的问题——旧代码的 `default:` 分支、漏 case、SQL `IN (...)` 列表都可能因新值出错,必须显式扫描
 
 ---
@@ -169,16 +169,18 @@ description: "Use for impact analysis of states, fields, events, or APIs, and be
 
 ## 冷启动扫描脚本
 
+脚本与本 SKILL.md 同目录（运行时安装为 `C:/Users/zenghui/.omp/skills/team-stand/reverse-index-required/hooks/scan-reverse-index.js`；插件构建版原为 `${CLAUDE_PLUGIN_ROOT}/hooks/`）。
+
 ```bash
 # 扫描整个项目
-node ${CLAUDE_PLUGIN_ROOT}/hooks/scan-reverse-index.js --project=. --output=./docs/knowledge-graph/reverse-index/
+node C:/Users/zenghui/.omp/skills/team-stand/reverse-index-required/hooks/scan-reverse-index.js --project=. --output=./docs/knowledge-graph/reverse-index/
 
 # 仅扫描特定语言
-node ${CLAUDE_PLUGIN_ROOT}/hooks/scan-reverse-index.js --project=. --lang=java
-node ${CLAUDE_PLUGIN_ROOT}/hooks/scan-reverse-index.js --project=. --lang=dart
+node C:/Users/zenghui/.omp/skills/team-stand/reverse-index-required/hooks/scan-reverse-index.js --project=. --lang=java
+node C:/Users/zenghui/.omp/skills/team-stand/reverse-index-required/hooks/scan-reverse-index.js --project=. --lang=dart
 
 # 输出到用户目录候选池
-node ${CLAUDE_PLUGIN_ROOT}/hooks/scan-reverse-index.js --project=. --output=user-candidates
+node C:/Users/zenghui/.omp/skills/team-stand/reverse-index-required/hooks/scan-reverse-index.js --project=. --output=user-candidates
 ```
 
 **扫描器能力(V1)**:
@@ -192,7 +194,7 @@ node ${CLAUDE_PLUGIN_ROOT}/hooks/scan-reverse-index.js --project=. --output=user
 - 不识别动态枚举(运行时根据配置生成)
 - 不识别字段在配置文件 / properties / yaml 的引用
 - 不识别同步事件订阅关系(需人工标注)
-- 不识别跨项目调用方(走 `cross-project-locator`)
+- 不识别跨项目调用方(跨项目不在本 skill 范围)
 - **不识别 Java / Kotlin / TS switch case 内部裸值**(`case PAID:` 形式省略了 enum 前缀,只识别 `EnumName.PAID` 形式);请人工补到候选区
 - 不识别枚举的 `name()` / `valueOf()` / `Enum.values()` 反射式判断
 - SQL 字面量识别仅匹配单引号 `'PAID'` 加常见 where/in/select 语境,有假阴性
@@ -293,7 +295,6 @@ flowchart TD
 | skill | 协作关系 |
 |---|---|
 | `backend-knowledge-graph-required` | 表关系 / 状态机 / 原子能力沉淀正向图谱;**反向索引**(谁判断了这个状态、谁读写了这个字段)归本 skill,二者互补 |
-| `cross-project-locator` | 单服务内 API 调用方 → `apis.md`(本 skill);**跨项目** API 调用方对照 → `cross-project-locator` |
 | `glossary-required` | 反向索引条目使用规范术语命名;术语未登记时先经 glossary-required |
 | `design-doc-required` | 设计文档「影响面」节必引用反向索引,不能凭空说"不影响" |
 | `bug-doc-required` | bug 根因分析涉及"为什么旧代码漏判这个状态"时,根因表必引用 states.md |
@@ -331,5 +332,5 @@ flowchart TD
 2. 用 grep 临时扫,不沉淀到反向索引文件:反向索引必须显式登记到 markdown
 3. 反向索引行无 `file:line`:无 file:line = 不可验证 = 不可信
 4. "新增态时是否需要补判断"列填空:这是反向索引价值最高的字段,空 = 形同未填
-5. 跨项目调用方塞进单项目 `apis.md`:本 skill 只管单服务,跨项目走 `cross-project-locator`
+5. 跨项目调用方塞进单项目 `apis.md`:本 skill 只管单服务,跨项目不在本 skill 范围
 6. 把表关系 / SQL 模板塞进反向索引:那归 `backend-knowledge-graph-required`

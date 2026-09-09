@@ -190,4 +190,3 @@ generated/
 | `doc-index-required` | 写前查重、写后登记 |
 | `backend-knowledge-graph-required` | 接收人工确认后的稳定业务事实，不接收原始推断 |
 | `reverse-index-required` | 优先消费 `generated/impact-index.md` 或 Graphify 查询结果 |
-| `cross-project-locator` | Graphify 只提供候选关系，跨项目契约仍需确认 |

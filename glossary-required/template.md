@@ -4,7 +4,7 @@
 >
 > 维护规则:由 `glossary-required` skill 自动追加 / 修正。日常会话补登先落 `_candidates.md`,整理时合并到本表。
 >
-> 不收录:通用编程概念(线程 / 事务 / 缓存)、跨项目同名异叫法对照(走 `cross-project-locator/shared-glossary.md`)。
+> 不收录:通用编程概念(线程 / 事务 / 缓存)、跨项目同名异叫法对照(本 skill 只登记本项目内术语)。
 
 ---
 

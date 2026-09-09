@@ -14,9 +14,8 @@ description: "Use when business-domain terms are missing, ambiguous, inconsisten
 - PRD 里的"X"在本项目代码里叫什么(类名 / 表名 / 枚举 / 字段)
 - 这个术语是否有同义词、近义词、过期叫法
 - 它对应的核心业务场景与代码坐标在哪
-- 这个术语在跨项目(POS 生态)中是否有不同叫法(若有则路由到 `cross-project-locator`)
 
-不处理:通用编程概念(线程 / 缓存 / 事务 / 子进程)、跨项目链路术语对照(走 `cross-project-locator`)、批量项目初始化术语表(走 `init-project-docs` 的 07_glossary.md)。
+不处理:通用编程概念(线程 / 缓存 / 事务 / 子进程)、批量项目初始化术语表(走 `init-project-docs` 的 07_glossary.md)。
 
 ---
 
@@ -55,7 +54,6 @@ description: "Use when business-domain terms are missing, ambiguous, inconsisten
 | 不负责的内容 | 归属 skill |
 |---|---|
 | 通用编程概念(线程 / 缓存 / 事务 / 子进程 / 并发) | `backend-knowledge-graph-required` 的"技术难点" |
-| 跨项目同名术语在不同项目中的不同叫法对照 | `cross-project-locator` 的 `shared-glossary.md` |
 | 批量项目初始化时一次性生成完整术语表 | `init-project-docs` 的 `templates/07_glossary.md` |
 | 表关系 / SQL 查询逻辑 / 状态机定义 | `backend-knowledge-graph-required` |
 
@@ -148,7 +146,7 @@ flowchart TD
     D --> E
     E -- "已登记" --> F["在答题/写作中使用规范术语\n并引用 glossary 中的定义"]
     E -- "未登记" --> G{"该术语是否属于本 skill 范围?\n(业务领域词,非通用编程词)"}
-    G -- "否(技术词)" --> H["路由到 backend-knowledge-graph-required\n或 cross-project-locator"]
+    G -- "否(技术词)" --> H["路由到 backend-knowledge-graph-required"]
     G -- "是(业务词)" --> I["按精简六栏格式追加到候选池\n或正式表(若已存在),确认状态=推断"]
     I --> J{"用户是否要求\n上传终版到项目 docs/?"}
     J -- "否(默认)" --> K["留在候选池(推断)"]
@@ -236,7 +234,6 @@ flowchart TD
 | `bug-doc-required` | bug 分析涉及业务名词时同样查 glossary;新发现术语候选 |
 | `business-logic-orientation` | 现状梳理时大量出现业务术语,必须同步更新 glossary 候选 |
 | `backend-knowledge-graph-required` | 表 / 枚举 / 状态机沉淀时附带的中文业务名也走 glossary;技术难点术语**不**走本 skill |
-| `cross-project-locator` | 跨项目同名术语在不同项目里有不同叫法时,**本项目内**叫法登记在本 skill,**跨项目对照**登记在 cross-project-locator 的 `shared-glossary.md` |
 | `reverse-index-required` | 反向索引使用规范术语命名条目,术语未登记时先经本 skill 登记再写反向索引 |
 
 ---
@@ -264,7 +261,7 @@ flowchart TD
 
 1. 凭空发明业务术语:必须基于代码 / DDL / PRD 中真实出现过的名字
 2. 把通用编程概念塞进 glossary:线程 / 缓存 / 事务等归 backend-knowledge-graph 的技术难点
-3. 把跨项目对照塞进单项目 glossary:跨项目同名异叫法登记 cross-project-locator
+3. 把跨项目对照塞进单项目 glossary:本 skill 只登记本项目内术语,不处理跨项目对照
 4. 用户用口语 AI 也跟着用口语:必须主动对齐到规范术语
 5. 候选池写成长篇定义:候选池保持精简六栏,长定义留给正式表
 6. 不查重就追加:同一术语已存在时只补充字段,不另起一行

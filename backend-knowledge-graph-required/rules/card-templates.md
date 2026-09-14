@@ -244,3 +244,29 @@
 - 前端展示含义（如已知）
 - 历史兼容值（如存在）
 ```
+
+## 场景卡
+
+`scenarios/{business-question}.md` 是知识图谱的问题级结论卡（回答 1~4 个具体业务问题）。**所有场景卡必须带 frontmatter 代码基线锚点**（新鲜度机制，与 `wiki-health-check` 检查项 3 联动）：
+
+```markdown
+---
+base_commit: 6b92279d9        # 本卡结论最后一次验证对应的 master commit（short sha），必填
+base_commit_checked: 2026-09-09  # 验证日期，必填
+涉及文件:                      # 本卡结论覆盖的代码文件清单（相对仓库根），必填
+  - src/main/java/com/jubaozan/service/mall/decorator/Xxx.java
+  - src/main/java/com/jubaozan/service/mall/settlement/chain/Yyy.java
+---
+```
+
+正文结构至少包含：
+
+- **回答的问题**：本卡回答哪 1~4 个具体业务问题（一句话一个问题）
+- **流程位置**：该业务在整体链路中的位置（一句话 + 入口坐标）
+- **已验证事实**：每条事实带代码坐标（`类.java:行号`）与置信度/验证方式
+- **判定矩阵**（如适用）：条件 → 业务含义 → 结果 → 代码坐标
+
+**新鲜度规则**（2026-09-12 生效）：
+- 更新卡片结论时必须同步刷新 `base_commit` 与 `base_commit_checked`。
+- 卡片不随代码自动更新；过期与否由 `wiki-health-check` 检查项 3 判定（`git log <base_commit>..HEAD -- <涉及文件>` 非空即标"待复核"）。
+- 涉及文件**必须显式写在 frontmatter**，不得依赖从正文正则提取（正文坐标常省略 `src/main/java/` 前缀，提取会漏）。

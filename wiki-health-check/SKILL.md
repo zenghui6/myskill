@@ -55,7 +55,8 @@ flowchart TD
 - 实现要点：
   - 文档 frontmatter 有 `base_commit` 时：`git log <base_commit>..HEAD -- <涉及文件>`
   - 无基线时降级：`statSync().mtimeMs` 取文档 mtime，`git log --since=@<mtime> -- <涉及文件>`，非空即标记
-  - 涉及文件从文档正文中的代码路径提取（如 `src/main/java/...`）
+  - 涉及文件：优先取 frontmatter 的 `涉及文件:` 清单（场景卡强制项），缺失时降级从文档正文中的代码路径提取（如 `src/main/java/...`）
+  - 场景卡（`knowledge-graph/scenarios/`）缺失 `base_commit` frontmatter 时直接标记「锚点缺失」为待处理项
 - 只标记数量与提交主题，不展开 diff
 
 ## Phase 2: 模型判定（仅命中时）

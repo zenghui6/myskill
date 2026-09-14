@@ -36,7 +36,8 @@ description: "持续更新项目文档和知识图谱。检测到 Controller、S
 2. 若项目尚未初始化，改用 `init-project-docs`。
 3. 读取当前 Git HEAD，并与 `source_commit` 比较。
 4. 若提交一致且用户未要求强制重建，报告“知识图谱已是当前版本”，只检查缺失或损坏的投影。
-5. 执行 `doc-index-required` Phase-A 后再修改 Markdown。
+5. **场景卡锚点校验（2026-09-12 起）**：对 `{KG_ROOT}/knowledge-graph/scenarios/*.md` 逐个检查 frontmatter `base_commit`——缺失则报告「锚点缺失」；存在则 `git log <base_commit>..HEAD -- <涉及文件>` 非空时报告「待复核」卡片清单（只列卡片与落后提交数，不展开）。结果写入更新摘要的“待人工确认”区，不改写卡片正文。
+6. 执行 `doc-index-required` Phase-A 后再修改 Markdown。
 
 旧知识库没有 `generated/graphify-metadata.json` 时，执行一次兼容迁移：保留人工文档，创建生成层并完成全量基线，不要求重建整个知识库。
 

@@ -1,0 +1,58 @@
+---
+name: test-release-doc
+description: "Use when a user asks to generate a release test document (提测文档/提测单/更新服务提测/发提测/生成提测) for the current branch's changes. Builds the doc from the current repo's service name, current git branch, and the branch diff, in the team's standard format."
+---
+
+# 提测文档生成
+
+## 核心原则
+
+基于**当前仓库与当前分支的真实改动**生成提测文档，不臆造字段。服务名、分支名、改动内容、依赖、数据库脚本、配置必须来自代码/仓库事实；无法从事实得到的字段（负责人、测试人员）标注待确认并向用户询问。
+
+## 触发时机
+
+- 用户说「生成提测文档」「提测单」「更新服务提测」「发提测」「写个提测」「按格式生成提测」
+- 代码合入 / 收尾阶段用户要求发提测
+
+## 执行流程
+
+1. **确定项目根**：当前工作目录（git 仓库根）。
+2. **提取服务名**：优先**项目根目录名**（当前代码的服务名，如 `mall-extend-service`）；目录名不具识别度时回退 `git remote` 仓库名。禁止用 pom `<artifactId>`（可能指向父 pom，如 `framework-parent`）。
+3. **提取分支名**：`git branch --show-current`。
+4. **确定改动基线**：优先 `main` / `master`；不存在时用最近一次提测分支或用户指定；用 `git merge-base <base> HEAD` 计算共同祖先。
+5. **提取改动内容**：
+   - `git log --oneline <base>..HEAD` — commit 列表，结合**会话上下文**提炼需求一句话与 PRD 链接；
+   - `git diff --stat <base>...HEAD` — 改动文件清单；
+   - 按文件类型分类：**依赖**（pom.xml / build 配置）、**数据库脚本**（`*.sql`）、**配置**（`application*.yml` / `*.properties` / bootstrap 等）。
+6. **推断影响范围**：从改动文件（Controller / Service / 链 / 事件）与会话上下文给出接口或模块范围。
+7. **开发人员**：`git config user.name`。
+8. **负责人 / 测试人员**：无可靠来源时**不得编造**，输出 `（待确认）` 并在生成后向用户询问填充。
+9. **输出标准格式**提测文档（见下）。
+
+## 输出格式
+
+```markdown
+1. [{服务名}] **`更新服务`**
+- 负责人：{待确认 或 用户提供}
+- 开发人员：{git config user.name}
+- 依赖：{无 或 有：具体依赖}
+- 内容：
+	- {基于分支改动提炼的需求一句话}
+	- {PRD 链接（如有）}
+- 代码分支名：{当前分支}
+- 影响范围：{改动涉及的接口 / 模块 / 链路}
+- 数据库脚本：{无 或 有}
+- 配置：{无 或 有}
+- 测试人员：{待确认 或 用户提供}
+- 环境：所有
+```
+
+## 硬约束
+
+| 项 | 规则 |
+|----|------|
+| 服务名 / 分支名 / 改动内容 | 必须来自代码 / 仓库事实，禁止臆造 |
+| 负责人 / 测试人员 | 无可靠来源一律 `（待确认）` 并询问，禁止编造或沿用无关需求的人员 |
+| 依赖 / 数据库脚本 / 配置 | 以 diff 中实际出现的文件为准；未出现即 `无` |
+| 内容 | 优先用会话上下文（本次改了什么、为什么），diff 仅兜底校验是否遗漏 |
+| 输出后确认 | 向用户回显分支名、改动范围与待确认字段，确认后交付 |

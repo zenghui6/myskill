@@ -10,23 +10,16 @@ function readArgument(argv, name) {
   return index >= 0 ? argv[index + 1] : undefined;
 }
 
-function readGitValue(key, cwd) {
-  return execFileSync('git', ['config', '--get', key], { cwd, encoding: 'utf8' }).trim();
-}
-
-function buildMessage({ title, body, name, email }) {
+function buildMessage({ title, body }) {
   const cleanTitle = (title || '').trim();
   const cleanBody = (body || '').trim();
   if (!cleanTitle) throw new Error('缺少 --title');
   const bodyError = validateCommitBody(cleanBody);
   if (bodyError) throw new Error(`--body ${bodyError}`);
-  if (!name || !email) throw new Error('缺少 Git user.name 或 user.email');
-  return `${cleanTitle}\n\n${cleanBody}\n\nAuthor: ${name} <${email}>\n`;
+  return `${cleanTitle}\n\n${cleanBody}\n`;
 }
 
 function writeMessageFile({ cwd, title, body, change, reason, result }) {
-  const name = readGitValue('user.name', cwd);
-  const email = readGitValue('user.email', cwd);
   const gitDir = execFileSync('git', ['rev-parse', '--path-format=absolute', '--git-dir'], {
     cwd,
     encoding: 'utf8',
@@ -35,7 +28,7 @@ function writeMessageFile({ cwd, title, body, change, reason, result }) {
   const outputPath = path.join(outputDir, 'COMMIT_MESSAGE');
   fs.mkdirSync(outputDir, { recursive: true });
   const structuredBody = body || buildStructuredBody({ change, reason, result });
-  fs.writeFileSync(outputPath, buildMessage({ title, body: structuredBody, name, email }), 'utf8');
+  fs.writeFileSync(outputPath, buildMessage({ title, body: structuredBody }), 'utf8');
   return outputPath;
 }
 

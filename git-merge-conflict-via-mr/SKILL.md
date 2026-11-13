@@ -181,6 +181,30 @@ git diff --no-index /tmp/ours.txt /tmp/theirs.txt | head -200
 | 项目检查环境不可用 | 记录降级手段与缺口，交由用户决定是否继续 |
 | 用户要求直接推 develop | 拒绝并说明：本技能只走 merge 分支 + MR |
 
+## 本地护栏（可选安装）
+
+在开发机启用全局 `pre-push`，拦截直推受保护分支的误操作：
+
+```bash
+# 安装（hook 文件位于 ~/.githooks/pre-push）
+git config --global core.hooksPath "$HOME/.githooks"
+
+# 卸载
+git config --global --unset core.hooksPath
+```
+
+hook 行为：
+
+- 推送目标为 `refs/heads/develop`、`refs/heads/master` 时直接 `exit 1`，并提示改走 merge 分支 + MR；
+- 受保护分支列表可用环境变量覆盖：`export PROTECTED_BRANCHES="develop master release/*"`；
+- 默认**不拦 `main`**（个人仓库日常直推 main 属正常）；
+- 会链式调用 `<git-dir>/hooks/pre-push.local`，项目自有 hook 放该文件，避免被全局 `core.hooksPath` 吞掉。
+
+限制（必须知道）：
+
+- 本地 hook 可被 `git push --no-verify` 绕过，**真正的护栏是 GitLab 的 Protected Branches**：把 `develop` / `master` 设为 *No one can push* 或 *Only maintainers can merge*，否则任何绕过手段都能直推。
+- `core.hooksPath` 会让仓库 `.git/hooks` 下的普通 hook 失效，安装前先确认目标仓库是否有自定义 hook。
+
 ## 与其它技能的关系
 
 | 技能 | 关系 |

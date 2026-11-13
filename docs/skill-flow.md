@@ -1,6 +1,6 @@
 # team-stand 技能路由图
 
-本文档描述 22 个 team-stand 技能的触发路由：入口按任务类型分流、文档与实施之间的硬门禁、改码后的收尾链。Agent 使用的紧凑文本路由在用户级 `~/.omp/agent/AGENTS.md`（每会话开场注入）；本文档是给人看的完整版。单一事实源始终是各 `SKILL.md` 的 `description`，两者冲突时以 SKILL.md 为准。
+本文档描述 24 个 team-stand 技能的触发路由：入口按任务类型分流、文档与实施之间的硬门禁、改码后的收尾链。Agent 使用的紧凑文本路由在用户级 `~/.omp/agent/AGENTS.md`（每会话开场注入）；本文档是给人看的完整版。单一事实源始终是各 `SKILL.md` 的 `description`，两者冲突时以 SKILL.md 为准。
 
 ---
 
@@ -68,6 +68,8 @@ flowchart TD
 | `wiki-health-check` | 用户手动要求文档体检 / 查重 / 健康检查（不自动触发） |
 | `java-coding-standards` | 写、审查、修改 Java 源码（实施链内与 `coding-standards-common` 叠加） |
 | `test-release-doc` | 用户要求生成提测文档 / 提测单 / 发提测（代码合入前，基于当前分支改动生成） |
+| `review-platform` | 提 MR 之后跟进平台 AI 评审：按 MR / 分支 / SHA 定位任务，读缺陷与门禁，提交反馈，触发或重新触发评审 |
+| `git-merge-conflict-via-mr` | 合入 `develop` / `master` 遇冲突时走「merge 分支 + MR」流程（**仅显式调用，不自动触发**）：禁止推送受保护分支 |
 | `dev-log` | team-standards 仓库决策型变更（图内收尾链末端判定） |
 
 ---
